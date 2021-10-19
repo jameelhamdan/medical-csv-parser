@@ -1,0 +1,35 @@
+// GET CREATE LIST API's
+import {ImportTask} from "../models.js";
+import {getPagination, getPagingData} from "../utils.js";
+
+const retrieve = async (req, res) => {
+    const data = await ImportTask.findByPk(req.params.id);
+    if (data === null) {
+        return res.status(404).json({});
+    }
+
+    return res.status(200).json(data.toJSON());
+}
+
+const list = async (req, res) => {
+    const { page, size } = req.query;
+    const { limit, offset } = getPagination(page, size);
+
+    const data = await ImportTask.findAndCountAll({
+         limit, offset,
+    });
+
+    return res.status(200).send(getPagingData(data));
+}
+
+const create = (req, res) => {
+    // TODO: Add create task implementation
+    return res.status(501);
+}
+
+
+export default {
+    retrieve,
+    list,
+    create,
+}

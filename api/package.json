@@ -3,14 +3,16 @@
   "version": "1.0.0",
   "private": true,
   "description": "API Backend",
-  "main": "server.js",
+  "main": "src/server.js",
   "type": "module",
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",
-    "start": "node server.js",
-    "dev": "set DEBUG=* & node server.js"
+    "start": "node src/server.js",
+    "dev": "set DEBUG=* & node src/server.js"
   },
   "dependencies": {
-    "express": "^4.17.1"
+    "express": "^4.17.1",
+    "pg": "^8.7.1",
+    "sequelize": "^6.7.0"
   }
 }
