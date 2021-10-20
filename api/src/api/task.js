@@ -16,10 +16,10 @@ const list = async (req, res) => {
     const { limit, offset } = getPagination(page, size);
 
     const data = await ImportTask.findAndCountAll({
-         limit, offset,
+         limit, offset, order: ['createdAt'],
     });
 
-    return res.status(200).send(getPagingData(data));
+    return res.status(200).send(getPagingData(data, page, limit));
 }
 
 const create = (req, res) => {

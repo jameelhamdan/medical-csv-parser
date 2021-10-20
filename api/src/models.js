@@ -3,17 +3,17 @@
  */
 
 
-import connection from "./config/db.js";
+import {dbConnection} from "./config/index.js";
 import Sequelize from "sequelize";
 import {readFile} from 'fs/promises';
 
 const sequelize = new Sequelize.Sequelize({
-    database: connection.database,
-    username: connection.username,
-    host: connection.host,
-    port: connection.port,
-    password: connection.password,
-    dialect: connection.dialect,
+    database: dbConnection.database,
+    username: dbConnection.username,
+    host: dbConnection.host,
+    port: dbConnection.port,
+    password: dbConnection.password,
+    dialect: dbConnection.dialect,
     operatorsAliases: false,
     define: {
         freezeTableName: true

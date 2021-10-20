@@ -1,7 +1,7 @@
-import {ImportTasksPage} from "./pages/task";
+import {HomePage} from "./pages/home";
 import {PatientsPage} from "./pages/patient";
 import {TreatmentsPage} from "./pages/treatment";
-import {HomePage} from "./pages/home";
+import {ImportTasksPage} from "./pages/task";
 
 
 export const urls = [
@@ -10,15 +10,15 @@ export const urls = [
         component: HomePage,
     },
     {
-        path: '/tasks',
-        component: ImportTasksPage,
-    },
-    {
         path: '/patients',
         component: PatientsPage,
     },
     {
         path: '/treatments',
         component: TreatmentsPage,
+    },
+    {
+        path: '/tasks',
+        component: ImportTasksPage,
     },
 ];
