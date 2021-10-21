@@ -1,4 +1,5 @@
-// TODO: Use url from .env
+import path from "path";
+
 export const dbConnection = {
     "database": "medical_csv_parser",
     "username": "postgres",
@@ -8,3 +9,5 @@ export const dbConnection = {
     "dialect": "postgres",
     "operatorsAliases": false
 }
+
+export const uploadPath = path.join(path.resolve(), '../media/files');

@@ -10,9 +10,6 @@ const Navigation = () => {
                     <Navbar.Collapse id='responsive-navbar-nav'>
                         <Nav>
                             <LinkContainer to="/">
-                                <Nav.Link>Home</Nav.Link>
-                            </LinkContainer>
-                            <LinkContainer to="/tasks">
                                 <Nav.Link>Import Tasks</Nav.Link>
                             </LinkContainer>
                             <LinkContainer to="/patients">

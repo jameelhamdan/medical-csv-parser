@@ -1,4 +1,3 @@
-// GET CREATE LIST API's
 import {Treatment} from "../models.js";
 import {getPagination, getPagingData} from "../utils.js";
 

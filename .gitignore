@@ -20,3 +20,7 @@
 # System Files
 .DS_Store
 Thumbs.db
+
+
+# Uploaded files
+media/*

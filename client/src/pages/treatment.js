@@ -1,5 +1,5 @@
 import React from "react";
-import API from "../services/api";
+import {API} from "../services/api";
 import {RemoteTable} from "../components/table";
 
 
@@ -65,7 +65,7 @@ export class TreatmentsPage extends React.Component {
     render() {
         return (
             <>
-                <h3>Tasks</h3>
+                <h3>Treatments</h3>
                 <RemoteTable
                     columns={this.columns}
                     data={this.state.data}

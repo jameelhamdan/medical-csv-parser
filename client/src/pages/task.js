@@ -1,6 +1,8 @@
 import React from "react";
-import API from "../services/api";
+import {API} from "../services/api";
 import {RemoteTable} from "../components/table";
+import {Button} from "react-bootstrap";
+import {LinkContainer} from "react-router-bootstrap";
 
 
 export class ImportTasksPage extends React.Component {
@@ -35,7 +37,7 @@ export class ImportTasksPage extends React.Component {
         this.load(this.state.page, this.state.sizePerPage);
     }
 
-    load(page , size) {
+    load(page, size) {
         API.getImportTaskList(page - 1, size).then(data => {
             this.setState({
                 totalItems: data.totalItems,
@@ -53,7 +55,12 @@ export class ImportTasksPage extends React.Component {
     render() {
         return (
             <>
-                <h3>Tasks</h3>
+                <div className="d-flex justify-content-between mb-2">
+                    <h3>Tasks</h3>
+                    <LinkContainer to="/upload">
+                        <Button sm variant="outline-success">+ Upload</Button>
+                    </LinkContainer>
+                </div>
                 <RemoteTable
                     columns={this.columns}
                     data={this.state.data}

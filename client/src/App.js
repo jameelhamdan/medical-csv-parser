@@ -1,3 +1,4 @@
+import React from "react";
 import {
     BrowserRouter as Router,
     Switch,
@@ -13,11 +14,11 @@ export default function App() {
     return (
         <div className="App">
             <Router>
-            <Navigation/>
+                <Navigation/>
                 <Switch>
                     <Container>
                         {urls.map(url =>
-                            <Route exact path={url.path} component={url.component}/>
+                            <Route key={url.path} exact path={url.path} component={url.component}/>
                         )}
                     </Container>
                 </Switch>

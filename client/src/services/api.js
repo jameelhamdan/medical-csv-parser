@@ -2,8 +2,23 @@ import {apiBaseUrl} from "../config";
 import axios from "axios";
 
 
-export default class API {
+export class API {
     static baseURL = apiBaseUrl;
+
+    static createImportTask = async (hospital, file, onUploadProgressCallback) => {
+        let formData = new FormData();
+
+        formData.append("file", file);
+
+        return axios.post(`${this.baseURL}/import_task`, formData, {
+            onUploadProgress: onUploadProgressCallback,
+            headers: {
+                "content-type": "multipart/form-data",
+            },
+        }).then(response => {
+            return response.data;
+        });
+    }
 
     static getImportTaskById = async (id) => {
         return axios.get(`${this.baseURL}/import_task/${id}`
@@ -58,6 +73,18 @@ export default class API {
 
     static getTreatmentList = async (page = 0, size = 10) => {
         return axios.get(`${this.baseURL}/treatment`, {
+            params: {
+                page: page, size: size,
+            }
+        }).then(response => {
+            return response.data;
+        }).catch(err => {
+            return [];
+        });
+    }
+
+    static getHospitalList = async (page = 0, size = 999) => {
+        return axios.get(`${this.baseURL}/hospital`, {
             params: {
                 page: page, size: size,
             }

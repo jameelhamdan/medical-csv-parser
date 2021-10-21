@@ -17,7 +17,8 @@ const sequelize = new Sequelize.Sequelize({
     operatorsAliases: false,
     define: {
         freezeTableName: true
-    }
+    },
+    logging: false
 });
 
 class Hospital extends Sequelize.Model {
