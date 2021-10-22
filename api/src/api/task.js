@@ -1,10 +1,10 @@
 import multer from "multer";
 import fs from "fs";
-import csv from "fast-csv";
-import {ImportTask, Hospital, sequelize} from "../models.js";
+import csvParse from "csv-parse";
+import {ImportTask, ImportTaskError, Hospital, sequelize, Patient, Treatment} from "../models.js";
 import {getPagination, getPagingData} from "../utils.js";
 import {uploadPath} from "../config/index.js";
-
+import {PatientParser, TreatmentParser} from "../parsers.js";
 
 const retrieve = async (req, res) => {
     const data = await ImportTask.findByPk(req.params.id);
@@ -40,6 +40,42 @@ const upload = multer({
     }),
 });
 
+
+async function processCsv(parser, importTask, filePath) {
+    let rowCount = 0;
+    let successCount = 0;
+    let errorCount = 0;
+
+    const reader = fs.createReadStream(filePath).pipe(csvParse({
+        columns: true,
+        trim: true,
+    }));
+
+    for await (const record of reader) {
+        const errors = await parser.validate(record);
+        if (errors.length > 0) {
+            // invalid
+            errorCount += 1;
+            await ImportTaskError.create({
+                errors: JSON.stringify(errors),
+                import_task_id: importTask.id,
+                row_count: rowCount,
+            });
+        } else {
+            const data = parser.parse(record);
+            if (importTask.type === ImportTask.TYPE.PATIENT) {
+                await Patient.create(data);
+            } else if (importTask.type === ImportTask.TYPE.TREATMENT) {
+                await Treatment.create(data);
+            }
+            successCount += 1;
+        }
+        rowCount += 1;
+    }
+
+    return [rowCount, successCount, errorCount];
+}
+
 const create = async (req, res) => {
     const ValidationErrorResponse = (_, m) => {
         return _.status(400).send({message: m});
@@ -62,7 +98,7 @@ const create = async (req, res) => {
 
         const hospital = await Hospital.findOne({where: {code: hospitalCode}});
         if (hospital === null) {
-            return ValidationErrorResponse(res,"Hospital Code is invalid, please check hospitals list for correct code.");
+            return ValidationErrorResponse(res, "Hospital Code is invalid, please check hospitals list for correct code.");
         }
 
         // Validate import type
@@ -75,33 +111,47 @@ const create = async (req, res) => {
         if (!req.file) {
             return ValidationErrorResponse(res, "File is required.");
         } else if (!["text/csv", "application/vnd.ms-excel"].includes(req.file.mimetype)) {
-            fs.unlink(req.file.path, err => {});
+            fs.unlink(req.file.path, err => {
+            });
             return ValidationErrorResponse(res, "File type is invalid, please only upload .csv files! " + req.file.mimetype);
         }
 
         // Add task to pending
+        let parser = null
+
+        if (importType === ImportTask.TYPE.PATIENT) {
+            parser = new PatientParser(hospital.code);
+        } else if (importType === ImportTask.TYPE.TREATMENT) {
+            parser = new TreatmentParser(hospital.code);
+        }
+
         const importTask = await ImportTask.create({
             hospital_id: hospital.id,
             type: importType,
             path: req.file.path.replaceAll(uploadPath, ""),
         });
 
-        // Read and go through the file
-        // TODO: Move this to background task queue
-        fs.createReadStream(req.file.path).pipe(csv.parse({headers: true})).on('error', error => {
-            //console.error(error);
-        }).on('data', row => {
-            // console.log(row)
-        }).on('end', (rowCount) => {
-            // console.log(`Parsed ${rowCount} rows`);
-        });
+        const [rowCount, successCount, errorCount] = await processCsv(parser, importTask, req.file.path);
+        let newState = ImportTask.STATE.SUCCESS;
+
+        let message = `Uploaded ${rowCount} records Successfully.`;
+        if (errorCount !== 0) {
+            newState = ImportTask.STATE.FAILURE;
+            message = `Uploaded ${rowCount} records with ${errorCount} failures.`;
+        }
 
         await importTask.update({
-            state: ImportTask.STATE.SUCCESS,
+            state: newState,
             finish_on: sequelize.fn('NOW'),
         });
 
-        return res.status(200).send(importTask.toJSON());
+        return res.status(200).send({
+            message: message,
+            data: importTask.toJSON(),
+            row_count: rowCount,
+            error_count: errorCount,
+            success_count: successCount,
+        });
     });
 }
 

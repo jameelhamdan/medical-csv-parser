@@ -1,4 +1,13 @@
 .App {
-    margin-top:56px;
+    margin-top: 56px;
     padding: 28px 0;
+}
+
+table td {
+    word-break: break-all;
+    vertical-align: middle;
+}
+
+table th {
+    vertical-align: middle;
 }

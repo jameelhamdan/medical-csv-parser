@@ -14,6 +14,11 @@ export class ImportTasksPage extends React.Component {
             0: "Failure"
         }
 
+        const TYPE = {
+            "P": "Patient",
+            "T": "Treatment",
+        }
+
         this.columns = [{
             dataField: 'id',
             text: 'ID',
@@ -24,6 +29,14 @@ export class ImportTasksPage extends React.Component {
             dataField: 'state',
             text: 'State',
             formatter: (cell) => STATE[cell],
+        }, {
+            dataField: 'type',
+            text: 'Type',
+            formatter: (cell) => TYPE[cell],
+        }, {
+            dataField: 'path',
+            text: 'File',
+            formatter: (cell) => cell.replace(/^.*[\\]/, ''),
         }, {
             dataField: 'start_on',
             text: 'Started on'

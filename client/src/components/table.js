@@ -7,7 +7,6 @@ export const RemoteTable = ({columns, data, page, sizePerPage, onTableChange, to
         <BootstrapTable
             remote
             striped
-            condensed
             bootstrap4
             keyField="id"
             data={data}

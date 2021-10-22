@@ -1,5 +1,6 @@
 import React from 'react';
 import {Alert, Button, Col, Form, ProgressBar, Row} from "react-bootstrap";
+import {Redirect} from "react-router-dom";
 import {API} from "../services/api";
 
 export class UploadPage extends React.Component {
@@ -7,6 +8,7 @@ export class UploadPage extends React.Component {
         super(props);
         this.state = {
             isLoading: false,
+            isFinished: false,
             error: "",
             progress: null,
             files: [],
@@ -30,8 +32,8 @@ export class UploadPage extends React.Component {
         this.setState({isLoading: true});
         API.createImportTask(this.state.hospital, this.state.importType, this.state.files[0], this.onUploadProgressCallback).then(data => {
             // Do stuff on success
-            //TODO: CHANGE THIS
-            this.setErrorMessage("Uploaded successfully!");
+            this.setErrorMessage(data.message);
+            this.setState({isFinished: true});
         }).catch(err => {
             const message = err?.response?.data?.message;
             this.setState({progress: null});
@@ -46,6 +48,8 @@ export class UploadPage extends React.Component {
     }
 
     render() {
+        if (this.state.isFinished) return <Redirect to="/" />
+
         return (
             <>
                 <h3>Upload CSV</h3>
@@ -79,7 +83,7 @@ export class UploadPage extends React.Component {
                         )}
                     </Form.Group>
                     <Form.Group>
-                        <Button disabled={this.state.isLoading} variant="outline-primary" type="submit">Upload</Button>
+                        <Button disabled={this.state.isLoading && !this.state.isFinished} variant="outline-primary" type="submit">Upload</Button>
                     </Form.Group>
                 </form>
             </>

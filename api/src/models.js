@@ -18,7 +18,7 @@ const sequelize = new Sequelize.Sequelize({
     define: {
         freezeTableName: true
     },
-    logging: false
+    logging: true
 });
 
 class Hospital extends Sequelize.Model {
@@ -153,6 +153,10 @@ Treatment.init({
         type: Sequelize.DataTypes.STRING,
         allowNull: true
     },
+    treatment_line: {
+        type: Sequelize.DataTypes.STRING,
+        allowNull: true
+    },
     cycle_per_days: {
         type: Sequelize.DataTypes.STRING,
         allowNull: true
@@ -227,11 +231,43 @@ ImportTask.belongsTo(Hospital, {
     foreignKey: 'hospital_id'
 });
 
+class ImportTaskError extends Sequelize.Model {}
+
+ImportTaskError.init({
+    id: {
+        type: Sequelize.DataTypes.BIGINT,
+        primaryKey: true,
+        autoIncrement: true,
+    },
+    row_count: {
+        type: Sequelize.DataTypes.BIGINT,
+    },
+    import_task_id: {
+        type: Sequelize.DataTypes.BIGINT,
+        references: {
+            model: ImportTask,
+            key: 'id',
+        },
+    },
+    errors: {
+        type: Sequelize.DataTypes.TEXT,
+    },
+}, {
+    sequelize,
+    timestamps: true,
+    modelName: 'ImportTaskError',
+    tableName: 'import_task_error',
+});
+
+ImportTaskError.belongsTo(ImportTask, {
+    foreignKey: 'import_task_id'
+});
+
 
 // TODO: use a migration/seeds libs later
 const initializeDatabase = async () => {
     console.log("Initializing Database...");
-    await sequelize.sync({ force: true});
+    await sequelize.sync({force: false});
 
     console.log("Adding Fixtures..");
     const hospitalsData = JSON.parse(
@@ -258,5 +294,6 @@ export {
     Hospital,
     Patient,
     Treatment,
-    ImportTask
+    ImportTask,
+    ImportTaskError,
 }
