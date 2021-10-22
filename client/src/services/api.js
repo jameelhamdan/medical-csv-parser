@@ -5,10 +5,12 @@ import axios from "axios";
 export class API {
     static baseURL = apiBaseUrl;
 
-    static createImportTask = async (hospital, file, onUploadProgressCallback) => {
+    static createImportTask = async (hospital, importType, file, onUploadProgressCallback) => {
         let formData = new FormData();
 
         formData.append("file", file);
+        formData.append("hospital", hospital);
+        formData.append("importType", importType);
 
         return axios.post(`${this.baseURL}/import_task`, formData, {
             onUploadProgress: onUploadProgressCallback,

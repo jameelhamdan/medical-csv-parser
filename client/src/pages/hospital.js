@@ -1,35 +1,20 @@
 import React from "react";
 import {API} from "../services/api";
 import {RemoteTable} from "../components/table";
-import {Button} from "react-bootstrap";
-import {LinkContainer} from "react-router-bootstrap";
 
 
-export class ImportTasksPage extends React.Component {
+export class HospitalsPage extends React.Component {
     constructor(props) {
         super(props);
-        const STATE = {
-            2: "Pending",
-            1: "Success",
-            0: "Failure"
-        }
-
         this.columns = [{
             dataField: 'id',
             text: 'ID',
         }, {
-            dataField: 'Hospital.name',
-            text: 'Hospital Name'
+            dataField: 'code',
+            text: 'code'
         }, {
-            dataField: 'state',
-            text: 'State',
-            formatter: (cell) => STATE[cell],
-        }, {
-            dataField: 'start_on',
-            text: 'Started on'
-        }, {
-            dataField: 'finish_on',
-            text: 'Finished on'
+            dataField: 'name',
+            text: 'Name'
         }];
 
         this.state = {
@@ -45,7 +30,7 @@ export class ImportTasksPage extends React.Component {
     }
 
     load(page, size) {
-        API.getImportTaskList(page - 1, size).then(data => {
+        API.getHospitalList(page - 1, size).then(data => {
             this.setState({
                 totalItems: data.totalItems,
                 data: data.rows,
@@ -62,12 +47,7 @@ export class ImportTasksPage extends React.Component {
     render() {
         return (
             <>
-                <div className="d-flex justify-content-between mb-2">
-                    <h3>Tasks</h3>
-                    <LinkContainer to="/upload">
-                        <Button variant="outline-success">+ Upload</Button>
-                    </LinkContainer>
-                </div>
+                <h3>Hospitals</h3>
                 <RemoteTable
                     columns={this.columns}
                     data={this.state.data}

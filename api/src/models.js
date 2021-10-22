@@ -14,7 +14,7 @@ const sequelize = new Sequelize.Sequelize({
     port: dbConnection.port,
     password: dbConnection.password,
     dialect: dbConnection.dialect,
-    operatorsAliases: false,
+    operatorsAliases: 1,
     define: {
         freezeTableName: true
     },
@@ -46,6 +46,16 @@ Hospital.init({
 });
 
 class Patient extends Sequelize.Model {
+    static STATE = {
+        ACTIVE: "A",
+        DECEASED: "D",
+        HOSPICE: "H",
+    }
+
+    static SEX = {
+        MALE: "M",
+        FEMALE: "F",
+    }
 }
 
 Patient.init({
@@ -104,6 +114,10 @@ Patient.init({
 });
 
 class Treatment extends Sequelize.Model {
+    static STATE = {
+        ACTIVE: "A",
+        ORDERED: "O",
+    }
 }
 
 Treatment.init({
@@ -151,7 +165,22 @@ Treatment.init({
 });
 
 
+Treatment.belongsTo(Patient, {
+    foreignKey: 'patient_id'
+});
+
+
 class ImportTask extends Sequelize.Model {
+    static STATE = {
+        PENDING: 2,
+        SUCCESS: 1,
+        FAILURE: 0,
+    }
+
+    static TYPE = {
+        PATIENT: "P",
+        TREATMENT: "T",
+    }
 }
 
 ImportTask.init({
@@ -161,8 +190,20 @@ ImportTask.init({
         autoIncrement: true,
     },
     state: {
-        // state the patient is currently in (1 = Success, 0 = Failure)
+        // state the patient is currently in (2 = Pending, 1 = Success, 0 = Failure)
         type: Sequelize.DataTypes.SMALLINT,
+        defaultValue: 2,
+    },
+    hospital_id: {
+        type: Sequelize.DataTypes.BIGINT,
+        references: {
+            model: Hospital,
+            key: 'id',
+        },
+    },
+    type: {
+        // state the patient is currently in (P = Patient, T = Treatment)
+        type: Sequelize.DataTypes.CHAR(1),
     },
     path: {
         type: Sequelize.DataTypes.STRING,
@@ -182,11 +223,15 @@ ImportTask.init({
     tableName: 'import_task',
 });
 
+ImportTask.belongsTo(Hospital, {
+    foreignKey: 'hospital_id'
+});
+
 
 // TODO: use a migration/seeds libs later
 const initializeDatabase = async () => {
     console.log("Initializing Database...");
-    await sequelize.sync();
+    await sequelize.sync({ force: true});
 
     console.log("Adding Fixtures..");
     const hospitalsData = JSON.parse(
@@ -209,6 +254,7 @@ const initializeDatabase = async () => {
 
 export {
     initializeDatabase,
+    sequelize,
     Hospital,
     Patient,
     Treatment,

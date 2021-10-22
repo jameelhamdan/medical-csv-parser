@@ -1,7 +1,8 @@
-import {PatientsPage} from "./pages/patient";
-import {TreatmentsPage} from "./pages/treatment";
-import {ImportTasksPage} from "./pages/task";
-import {UploadPage} from "./pages/upload";
+import {PatientsPage} from "./patient";
+import {TreatmentsPage} from "./treatment";
+import {ImportTasksPage} from "./task";
+import {UploadPage} from "./upload";
+import {HospitalsPage} from "./hospital";
 
 
 export const urls = [
@@ -20,5 +21,9 @@ export const urls = [
     {
         path: '/treatments',
         component: TreatmentsPage,
+    },
+    {
+        path: '/hospitals',
+        component: HospitalsPage,
     }
 ];

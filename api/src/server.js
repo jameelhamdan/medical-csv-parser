@@ -6,6 +6,7 @@ import cors from "cors";
 import {uploadPath} from "./config/index.js";
 
 const initializeUploadDirectory = () => {
+    console.log("Initializing media directory");
     const dir = uploadPath;
     if (!fs.existsSync(dir)) {
         fs.mkdirSync(dir, { recursive: true });

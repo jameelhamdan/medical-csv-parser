@@ -1,6 +1,7 @@
 import multer from "multer";
 import fs from "fs";
-import {ImportTask} from "../models.js";
+import csv from "fast-csv";
+import {ImportTask, Hospital, sequelize} from "../models.js";
 import {getPagination, getPagingData} from "../utils.js";
 import {uploadPath} from "../config/index.js";
 
@@ -19,7 +20,10 @@ const list = async (req, res) => {
     const {limit, offset} = getPagination(page, size);
 
     const data = await ImportTask.findAndCountAll({
-        limit, offset, order: ['createdAt'],
+        limit: limit,
+        offset: offset,
+        include: Hospital,
+        order: ['createdAt'],
     });
 
     return res.status(200).send(getPagingData(data, page, limit));
@@ -37,26 +41,64 @@ const upload = multer({
 });
 
 const create = async (req, res) => {
+    const ValidationErrorResponse = (_, m) => {
+        return _.status(400).send({message: m});
+    }
+
     upload.single("file")(req, res, async (err) => {
         if (err instanceof multer.MulterError) {
-            return res.status(400).send({message: "File upload error."});
+            return ValidationErrorResponse(res, "File upload error.");
         } else if (err) {
             throw err;
         }
 
-        if (!req.file) {
-            return res.status(400).send({message: "File is required."});
-        } else if (!["text/csv", "application/vnd.ms-excel", "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"].includes(req.file.mimetype)) {
-            fs.unlink(req.file.path, err => {});
-            return res.status(400).send({message: "File type is invalid, please only upload .csv files! "+ req.file.mimetype});
+        const hospitalCode = req.body?.hospital;
+        const importType = req.body?.importType;
+
+        // Validate Hospital
+        if (!hospitalCode) {
+            return ValidationErrorResponse(res, "Hospital Code is required.");
         }
 
-        // TODO: get hospital from req
-        const hospital = "hospital_1";
+        const hospital = await Hospital.findOne({where: {code: hospitalCode}});
+        if (hospital === null) {
+            return ValidationErrorResponse(res,"Hospital Code is invalid, please check hospitals list for correct code.");
+        }
 
+        // Validate import type
+        if (!importType) {
+            return ValidationErrorResponse(res, "Import Type is required.")
+        } else if (!Object.values(ImportTask.TYPE).includes(importType)) {
+            return ValidationErrorResponse(res, "Import Type is invalid.")
+        }
+
+        if (!req.file) {
+            return ValidationErrorResponse(res, "File is required.");
+        } else if (!["text/csv", "application/vnd.ms-excel"].includes(req.file.mimetype)) {
+            fs.unlink(req.file.path, err => {});
+            return ValidationErrorResponse(res, "File type is invalid, please only upload .csv files! " + req.file.mimetype);
+        }
+
+        // Add task to pending
         const importTask = await ImportTask.create({
-            state: 1,
+            hospital_id: hospital.id,
+            type: importType,
             path: req.file.path.replaceAll(uploadPath, ""),
+        });
+
+        // Read and go through the file
+        // TODO: Move this to background task queue
+        fs.createReadStream(req.file.path).pipe(csv.parse({headers: true})).on('error', error => {
+            //console.error(error);
+        }).on('data', row => {
+            // console.log(row)
+        }).on('end', (rowCount) => {
+            // console.log(`Parsed ${rowCount} rows`);
+        });
+
+        await importTask.update({
+            state: ImportTask.STATE.SUCCESS,
+            finish_on: sequelize.fn('NOW'),
         });
 
         return res.status(200).send(importTask.toJSON());

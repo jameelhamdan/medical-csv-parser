@@ -6,7 +6,7 @@ import {
 } from "react-router-dom";
 import {Container} from "react-bootstrap";
 import Navigation from "./components/navigation";
-import {urls} from "./urls";
+import {urls} from "./pages/urls";
 import "./index.css";
 
 
